@@ -1,24 +1,27 @@
-# 概述
-基于llama.cpp-b1742进行源2.0-2B模型的在window-cpu平台上的适配；
 
-目前主要对fp16格式进行了适配；
+## 1. 概述
 
-由于源2.0模型结构与llama结构有些差异，因此主要在llama结构上进行了修改，主要的修改有：
+基于llama.cpp（version：b1742）在Windows系统（CPU Only）上对源2.0-2B模型的适配。
+
+由于源2.0模型结构与llama结构存在差异，针对源2.0模型（Yuan2.0-2B）模型LFA结构，进行如下修改：
+
 - llama计算图中添加LFA结构，修改ggml_conv_1d逻辑，以适配源2.0，保证前后序列长度不变；
 - llama计算图中添加q、k混合相关的逻辑；
 - 修改IM2COL算子，修改数组的读取方式；
 - 修改ADD算子，将卷积模块的输出进行转置，以适配后面的计算；
 - 修改concat算子，以适配q、k混合的逻辑；
+- 支持多线程推理，加速生成速率；
 
+目前支持fp16精度模型的gguf文件转换，后续会持续进行其他精度的工作。
 
+## 2. gguf文件的生成
 
-# gguf文件的生成
+```shell
 python convert.py --model yuan2b-hf\yuan2-2B --outfile zh-models/Yuan2-2B-Februa-hf-GGUF.gguf
+```
 
-
-# 代码编译
-
-- On Windows:
+## 3. 编译
+  - On Windows:
 
     1. Download the latest fortran version of [w64devkit](https://github.com/skeeto/w64devkit/releases).
     2. Extract `w64devkit` on your pc.
@@ -30,16 +33,26 @@ python convert.py --model yuan2b-hf\yuan2-2B --outfile zh-models/Yuan2-2B-Februa
         ```
 
 
-# 测试demo
+## 4. 测试Demo
+
+### <font color=#FFC125 >测试环境 </font> 
+
+- python3.9 
+- 11th Gen Intel(R) Core(TM) i5-1145G7 @2.60GHz 2.61GHz
+- 8.00GB RAM 
+- Windows 10专业版（21H1） 
+
+### <font color=#FFC125 >测试方法 </font> 
+
+
+```shell
 main.exe -m D:\\llama-cpp\\llama.cpp\\zh-models\\Yuan2-2B-Februa-hf-GGUF.gguf -p "推荐一下济南附近有哪些好玩的地方？" -n 400  --top-k  1 --threads 4
-
-
-# 测试效果
-测试环境
-
-python3.9 intel i7-10510u cpu @1.80GHz 2.30Ghz
-
 ```
+
+
+### <font color=#FFC125 >测试效果 </font> 
+
+```shell
 推荐一下济南附近有哪些好玩的地方？<sep> 当然可以！以下是一些在济南附近的好玩景点：
 1. 大明湖：位于济南市历下区，是济南市内最大的湖泊之一。这里有美丽的湖光山色和众多的游乐设施，如游船、自行车等，非常适合 休闲游玩。
 2. 泉城广场：位于济南市市中区，是一个集购物、餐饮、娱乐为一体的综合性广场。广场上有喷泉和音乐喷泉表演，还有各种展览和演 出活动。
@@ -54,3 +67,20 @@ llama_print_timings: prompt eval time =    8665.51 ms /    10 tokens (  866.55 m
 llama_print_timings:        eval time =  223811.15 ms /   231 runs   (  968.88 ms per token,     1.03 tokens per second)
 llama_print_timings:       total time =  248978.35 ms
 ```
+### <font color=#FFC125 >测试性能 </font> 
+
+
+<table>
+    <tr>
+        <th rowspan="2">推理性能</th><th>GGUF格式（C++）</th><th>HF格式（Python）</th><th>加速比</th>
+    </tr>
+    <tr>
+        <td align="center">9.16 tokens/s</td><td align="center">1.21 tokens/s</td><td align="center">7.57</td>
+    </tr>
+    <tr>
+        <th rowspan="2">内存占用</th><th>GGUF格式（C++）</th><th>HF格式（Python）</th><th>内存占比（GGUF/HF）</th>
+    </tr>
+    <tr>
+        <td align="center">~0.4 GB</td><td align="center">~8.6 GB</td><td align="center">4.65%</td>
+    </tr>
+</table>
