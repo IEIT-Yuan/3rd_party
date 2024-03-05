@@ -1,0 +1,41 @@
+# 概述
+基于llama.cpp-b1742进行源2.0-2B模型的在window-cpu平台上的适配；
+
+目前主要对fp16格式进行了适配；
+
+由于源2.0模型结构与llama结构有些差异，因此主要在llama结构上进行了修改，主要的修改有：
+- llama计算图中添加LFA结构，修改ggml_conv_1d逻辑，以适配源2.0，保证前后序列长度不变；
+- llama计算图中添加q、k混合相关的逻辑；
+- 修改IM2COL算子，修改数组的读取方式；
+- 修改ADD算子，将卷积模块的输出进行转置，以适配后面的计算；
+- 修改concat算子，以适配q、k混合的逻辑；
+
+
+
+# gguf文件的生成
+python convert.py --model yuan2b-hf\yuan2-2B --outfile zh-models/Yuan2-2B-Februa-hf-GGUF.gguf
+
+# 测试demo
+main.exe -m D:\\llama-cpp\\llama.cpp\\zh-models\\Yuan2-2B-Februa-hf-GGUF.gguf -p "推荐一下济南附近有哪些好玩的地方？" -n 400  --top-k  1 --threads 4
+
+
+# 测试效果
+测试环境
+
+python3.9 intel i7-10510u cpu @1.80GHz 2.30Ghz
+
+```
+推荐一下济南附近有哪些好玩的地方？<sep> 当然可以！以下是一些在济南附近的好玩景点：
+1. 大明湖：位于济南市历下区，是济南市内最大的湖泊之一。这里有美丽的湖光山色和众多的游乐设施，如游船、自行车等，非常适合 休闲游玩。
+2. 泉城广场：位于济南市市中区，是一个集购物、餐饮、娱乐为一体的综合性广场。广场上有喷泉和音乐喷泉表演，还有各种展览和演 出活动。
+3. 千佛山景区：位于济南市历城区，是济南最著名的旅游景点之一。这里有著名的千佛山大佛和众多的佛教文化遗址，可以爬山、观景 、参观寺庙等。
+4. 济南动物园：位于济南市章丘区，是中国最早建立的一座综合性动物园。这里有各种珍稀动物，如大熊猫、长颈鹿、孔雀等，还有表 演和互动活动。
+5. 青岛路美食街：位于济南市历城区，是一个集购物、餐饮、娱乐为一体的美食街区。这里有各种特色小吃和餐厅，可以品尝到地道的 济南美食。
+希望以上推荐对您有所帮助！<eod> [end of text]
+
+llama_print_timings:        load time =    3188.66 ms
+llama_print_timings:      sample time =   12369.59 ms /   232 runs   (   53.32 ms per token,    18.76 tokens per second)
+llama_print_timings: prompt eval time =    8665.51 ms /    10 tokens (  866.55 ms per token,     1.15 tokens per second)
+llama_print_timings:        eval time =  223811.15 ms /   231 runs   (  968.88 ms per token,     1.03 tokens per second)
+llama_print_timings:       total time =  248978.35 ms
+```
