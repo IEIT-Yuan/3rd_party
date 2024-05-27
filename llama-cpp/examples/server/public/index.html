@@ -234,6 +234,7 @@
       mirostat_eta: 0.1, // learning rate
       grammar: '',
       n_probs: 0, // no completion_probabilities,
+      min_keep: 0, // min probs from each sampler,
       image_data: [],
       cache_prompt: true,
       api_key: ''
@@ -427,7 +428,7 @@
         }
 
         if (data.timings) {
-          llamaStats.value = data.timings;
+          llamaStats.value = data;
         }
       }
 
@@ -792,6 +793,9 @@
               ${IntField({ label: "Show Probabilities", max: 10, min: 0, name: "n_probs", value: params.value.n_probs })}
             </fieldset>
             <fieldset>
+              ${IntField({ label: "Min Probabilities from each Sampler", max: 10, min: 0, name: "min_keep", value: params.value.min_keep })}
+            </fieldset>
+            <fieldset>
               <label for="api_key">API Key</label>
               <input type="text" name="api_key" value="${params.value.api_key}" placeholder="Enter API key" oninput=${updateParams} />
             </fieldset>
@@ -880,7 +884,7 @@
       }
       return html`
         <span>
-          ${llamaStats.value.predicted_per_token_ms.toFixed()}ms per token, ${llamaStats.value.predicted_per_second.toFixed(2)} tokens per second
+          ${llamaStats.value.tokens_predicted} predicted, ${llamaStats.value.tokens_cached} cached, ${llamaStats.value.timings.predicted_per_token_ms.toFixed()}ms per token, ${llamaStats.value.timings.predicted_per_second.toFixed(2)} tokens per second
         </span>
       `
     }

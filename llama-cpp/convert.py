@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import copy
 import enum
 import faulthandler
 import functools
@@ -40,7 +41,13 @@ if hasattr(faulthandler, 'register') and hasattr(signal, 'SIGUSR1'):
 
 NDArray: TypeAlias = 'np.ndarray[Any, Any]'
 
-ARCH = gguf.MODEL_ARCH.LLAMA
+# ARCH = gguf.MODEL_ARCH.LLAMA
+# ARCH = gguf.MODEL_ARCH.YUAN2
+# general_name="yuan2"
+
+ARCH = gguf.MODEL_ARCH.YUAN2_MOE
+general_name="yuan2_moe"
+
 
 DEFAULT_CONCURRENCY = 8 #默认并发性
 
@@ -240,8 +247,13 @@ class Params:
         n_experts      = None
         n_experts_used = None
 
-        if "num_local_experts" in config:
-            n_experts = config["num_local_experts"]
+        # if "num_local_experts" in config:
+        #     n_experts = config["num_local_experts"]
+        #     n_experts_used = config["num_experts_per_tok"]
+
+        # yuan2-moe
+        if "num_experts" in config:
+            n_experts = config["num_experts"]
             n_experts_used = config["num_experts_per_tok"]
 
         return Params(
@@ -871,13 +883,14 @@ class OutputFile:
         self.gguf = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH], endianess=endianess)
 
     def add_meta_arch(self, params: Params) -> None:
-        name = "LLaMA"
+        # name = "LLaMA"
 
         # TODO: better logic to determine model name
-        if params.n_ctx == 4096:
-            name = "LLaMA v2"
-        elif params.path_model is not None:
-            name = str(params.path_model.parent).split('/')[-1]
+        # if params.n_ctx == 4096:
+        #     name = "LLaMA v2"
+        # elif params.path_model is not None:
+        #     name = str(params.path_model.parent).split('/')[-1]
+        name=general_name
 
         self.gguf.add_name                (name)
         self.gguf.add_context_length      (params.n_ctx)
@@ -963,7 +976,7 @@ class OutputFile:
         of = OutputFile(fname_out, endianess=endianess)
 
         # meta data
-        of.add_meta_arch(params)
+        of.add_meta_arch(params,)
         of.add_meta_vocab(vocab)
         of.add_meta_special_vocab(svocab)
 
@@ -1023,9 +1036,9 @@ class OutputFile:
             if("conv1.weight" in name):
                 # for i in range(2048):
                 #     print(ndarray[0,i,:,0])
-                ndarray=ndarray.reshape(1,2,2048,1024)
+                ndarray=ndarray.reshape(1,2,params.n_embd,int(params.n_embd/2))
             if ("conv2.weight" in name):
-                ndarray = ndarray.reshape(1, 2,  1024,2048)
+                ndarray = ndarray.reshape(1, 2,  int(params.n_embd/2),params.n_embd)
             if("blk.0.attn_k.weight" in name):
                 print("")
             elapsed = time.time() - start
@@ -1058,7 +1071,7 @@ def convert_to_output_type(model: LazyModel, output_type: GGMLFileType) -> LazyM
 
 
 def convert_model_names(model: LazyModel, params: Params) -> LazyModel:
-    tmap = gguf.TensorNameMap(ARCH, params.n_layer)
+    tmap = gguf.TensorNameMap(ARCH, params.n_layer,params.n_experts)
     should_skip: set[gguf.MODEL_TENSOR] = set(gguf.MODEL_TENSOR_SKIP.get(ARCH, []))
 
     tmp = model
@@ -1080,7 +1093,13 @@ def convert_model_names(model: LazyModel, params: Params) -> LazyModel:
             break
 
     out: LazyModel = {}
+    lt_bk=None
     for name, lazy_tensor in model.items():
+        if (name == "model.embed_tokens.weight" or name == "embed_tokens.weight"):
+            lt_bk = copy.deepcopy(lazy_tensor)
+        if("rotary_emb.inv_freq" in name):
+            print("pass ",name)
+            continue
         tensor_type, name_new = tmap.get_type_and_name(name, try_suffixes = (".weight", ".bias")) or (None, None)
         if name_new is None:
             raise Exception(f"Unexpected tensor name: {name}")
@@ -1091,7 +1110,9 @@ def convert_model_names(model: LazyModel, params: Params) -> LazyModel:
 
         print(f"{name:48s} -> {name_new:40s} | {lazy_tensor.data_type.name:6s} | {lazy_tensor.shape}")
         out[name_new] = lazy_tensor
-
+    if(lt_bk is not None and "output.weight" not in out):
+        out["output.weight"]=lt_bk
+        print("embed_tokens.weight -> output.weight}|"+ f"{lt_bk.data_type.name:6s} | {lt_bk.shape}")
     return out
 
 
@@ -1209,10 +1230,9 @@ def main(args_in: list[str] | None = None) -> None:
     parser.add_argument("--vocab-only",  action="store_true",    help="extract only the vocab")
     parser.add_argument("--outtype",     choices=output_choices, help="output format - note: q8_0 may be very slow (default: f16 or f32 based on input)")
     parser.add_argument("--vocab-dir",   type=Path,              help="directory containing tokenizer.model, if separate from model file")
-    parser.add_argument("--outfile",     type=Path, default="D:\llama-cpp\llama.cpp/zh-models/Yuan2-2B-Februa-hf-GGUF.gguf",              help="path to write to; default: based on input")
-    # parser.add_argument("--outfile",     type=Path, default="zh-models/chinese-alpaca-2-1.3b-f16.gguf",              help="path to write to; default: based on input")
-    parser.add_argument("--model",         type=Path, default="E:\ckpts\yuan2b-hf\yuan2-2Bz-jh",              help="directory containing model file, or model file itself (*.pth, *.pt, *.bin)")
-    # parser.add_argument("--model",         type=Path, default="D:\llama-cpp\llama.cpp-b1742\zh-models\chinese-alpaca-2-1.3b",              help="directory containing model file, or model file itself (*.pth, *.pt, *.bin)")
+    # parser.add_argument("--outfile",     type=Path, default="D:\\llama-cpp\\llama.cpp-bk\\zh-models/yuan2b-chenxi2-f16-merge.gguf",              help="path to write to; default: based on input")
+    parser.add_argument("--outfile",     type=Path, default="E:\\yuan2b-2-moe-merge.gguf",              help="path to write to; default: based on input")
+    parser.add_argument("--model",         type=Path, default="E:\\ckpts\\yuan2b-moe-2",              help="directory containing model file, or model file itself (*.pth, *.pt, *.bin)")
     parser.add_argument("--ctx",         type=int,               help="model training context (default: based on input)")
     parser.add_argument("--concurrency", type=int,               help=f"concurrency used for conversion (default: {DEFAULT_CONCURRENCY})", default = DEFAULT_CONCURRENCY)
     parser.add_argument("--bigendian",   action="store_true",    help="model is executed on big endian machine")
