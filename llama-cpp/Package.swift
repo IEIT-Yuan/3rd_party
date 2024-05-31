@@ -17,7 +17,17 @@ let package = Package(
         .target(
             name: "llama",
             path: ".",
-            exclude: [],
+            exclude: [
+               "cmake",
+               "examples",
+               "scripts",
+               "models",
+               "tests",
+               "CMakeLists.txt",
+               "ggml-cuda.cu",
+               "ggml-cuda.h",
+               "Makefile"
+            ],
             sources: [
                 "ggml.c",
                 "llama.cpp",

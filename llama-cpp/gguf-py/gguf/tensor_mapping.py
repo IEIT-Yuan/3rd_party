@@ -18,6 +18,8 @@ class TensorNameMap:
             "embeddings.word_embeddings",                # bert
             "language_model.embedding.word_embeddings",  # persimmon
             "transformer.embd.wte",                      # phi2
+            "embed_tokens",  # yuan2-moe
+            "model.embed_tokens",  # yuan2-moe
         ),
 
         # Token type embeddings
@@ -75,6 +77,7 @@ class TensorNameMap:
             "transformer.h.{bid}.ln_mlp",                           # falcon40b
             "model.layers.{bid}.input_layernorm",                   # llama-hf
             "layers.{bid}.attention_norm",                          # llama-pth
+            "layers.{bid}.input_layernorm",  # yuan2-moe
             "encoder.layer.{bid}.attention.output.LayerNorm",       # bert
             "language_model.encoder.layers.{bid}.input_layernorm",  # persimmon
             "model.layers.{bid}.ln1",                               # yi
@@ -102,45 +105,70 @@ class TensorNameMap:
         MODEL_TENSOR.ATTN_Q: (
             "model.layers.{bid}.self_attn.q_proj",         # llama-hf
             "layers.{bid}.attention.wq",                   # llama-pth
+            "layers.{bid}.self_attn.q_proj",  # yuan2-moe
             "encoder.layer.{bid}.attention.self.query",    # bert
             "transformer.h.{bid}.attn.q_proj",             # gpt-j
             "model.layers.layers.{bid}.self_attn.q_proj",  # plamo
         ),
 
+        # MLP Attention query
+        MODEL_TENSOR.MLP_ATTN_Q: (
+            "layers.{bid}.mlp.gate.query",  # yuan2-moe
+            "model.layers.{bid}.mlp.gate.query",  # yuan2-moe
+        ),
+
         # lf
         MODEL_TENSOR.CONV1: (
             "model.layers.{bid}.self_attn.lf_gate.conv1",
+            "layers.{bid}.self_attn.lf_gate.conv1",
         ),
         # MODEL_TENSOR.CONV1_B: (
         #     "model.layers.{bid}.self_attn.lf_gate.conv1",
         # ),
         MODEL_TENSOR.CONV2: (
             "model.layers.{bid}.self_attn.lf_gate.conv2",
+            "layers.{bid}.self_attn.lf_gate.conv2",
         ),
         # MODEL_TENSOR.CONV2_B: (
         #     "model.layers.{bid}.self_attn.lf_gate.conv2",
         # ),
         MODEL_TENSOR.LF_OUTPUT_NORM: (
             "model.layers.{bid}.self_attn.lf_gate.output_layernorm",
+            "layers.{bid}.self_attn.lf_gate.output_layernorm",  # yuan2-moe
         ),
 
         # Attention key
         MODEL_TENSOR.ATTN_K: (
             "model.layers.{bid}.self_attn.k_proj",         # llama-hf
             "layers.{bid}.attention.wk",                   # llama-pth
+            "layers.{bid}.self_attn.k_proj",  # yuan2-moe
             "encoder.layer.{bid}.attention.self.key",      # bert
             "transformer.h.{bid}.attn.k_proj",             # gpt-j
             "model.layers.layers.{bid}.self_attn.k_proj",  # plamo
         ),
 
+        # MLP Attention key
+        MODEL_TENSOR.MLP_ATTN_K: (
+            "layers.{bid}.mlp.gate.key",  # yuan2-moe
+            "model.layers.{bid}.mlp.gate.key",  # yuan2-moe
+        ),
+
         # Attention value
         MODEL_TENSOR.ATTN_V: (
             "model.layers.{bid}.self_attn.v_proj",         # llama-hf
+            "layers.{bid}.self_attn.v_proj",  # yuan2-moe
             "layers.{bid}.attention.wv",                   # llama-pth
             "encoder.layer.{bid}.attention.self.value",    # bert
             "transformer.h.{bid}.attn.v_proj",             # gpt-j
             "model.layers.layers.{bid}.self_attn.v_proj",  # plamo
         ),
+
+        # MLP Attention value
+        MODEL_TENSOR.MLP_ATTN_V: (
+            "layers.{bid}.mlp.gate.value",  # yuan2-moe
+            "model.layers.{bid}.mlp.gate.value",  # yuan2-moe
+        ),
+
 
         # Attention output
         MODEL_TENSOR.ATTN_OUT: (
@@ -150,6 +178,7 @@ class TensorNameMap:
             "transformer.h.{bid}.self_attention.dense",                  # falcon
             "h.{bid}.self_attention.dense",                              # bloom
             "model.layers.{bid}.self_attn.o_proj",                       # llama-hf
+            "layers.{bid}.self_attn.o_proj",  # yuan2-moe
             "layers.{bid}.attention.wo",                                 # llama-pth
             "encoder.layer.{bid}.attention.output.dense",                # bert
             "transformer.h.{bid}.attn.out_proj",                         # gpt-j
@@ -172,6 +201,7 @@ class TensorNameMap:
             "h.{bid}.post_attention_layernorm",                              # bloom
             "transformer.blocks.{bid}.norm_2",                               # mpt
             "model.layers.{bid}.post_attention_layernorm",                   # llama-hf
+            "layers.{bid}.post_attention_layernorm",  # yuan2-moe
             "layers.{bid}.ffn_norm",                                         # llama-pth
             "encoder.layer.{bid}.output.LayerNorm",                          # bert
             "language_model.encoder.layers.{bid}.post_attention_layernorm",  # persimmon
@@ -216,6 +246,8 @@ class TensorNameMap:
         MODEL_TENSOR.FFN_GATE_EXP: (
             "layers.{bid}.feed_forward.experts.{xid}.w1",           # mixtral
             "model.layers.{bid}.block_sparse_moe.experts.{xid}.w1", # mixtral
+            "layers.{bid}.mlp.experts.{xid}.w1",  # yuan2-moe
+            "model.layers.{bid}.mlp.experts.{xid}.w1",  # yuan2-moe
         ),
 
         # Feed-forward down
@@ -237,6 +269,8 @@ class TensorNameMap:
         MODEL_TENSOR.FFN_DOWN_EXP: (
             "layers.{bid}.feed_forward.experts.{xid}.w2",           # mixtral
             "model.layers.{bid}.block_sparse_moe.experts.{xid}.w2", # mixtral
+            "layers.{bid}.mlp.experts.{xid}.w2",  # yuan2-moe
+            "model.layers.{bid}.mlp.experts.{xid}.w2",  # yuan2-moe
         ),
 
         MODEL_TENSOR.ATTN_Q_NORM: (
@@ -254,7 +288,7 @@ class TensorNameMap:
 
     mapping: dict[str, tuple[MODEL_TENSOR, str]]
 
-    def __init__(self, arch: MODEL_ARCH, n_blocks: int):
+    def __init__(self, arch: MODEL_ARCH, n_blocks: int,n_experts):
         self.mapping = {}
         for tensor, keys in self.mappings_cfg.items():
             if tensor not in MODEL_TENSORS[arch]:
@@ -265,12 +299,11 @@ class TensorNameMap:
                 self.mapping[key] = (tensor, tensor_name)
         for bid in range(n_blocks):
             for tensor, keys in self.block_mappings_cfg.items():
-                # if(tensor== MODEL_TENSOR.LF_OUTPUT_NORM):
-                #     print("")
                 if tensor not in MODEL_TENSORS[arch]:
                     continue
                 # TODO: make this configurable
-                n_experts = 8
+                if(n_experts is None):
+                    n_experts = 8
                 for xid in range(n_experts):
                     tensor_name = TENSOR_NAMES[tensor].format(bid = bid, xid = xid)
                     self.mapping[tensor_name] = (tensor, tensor_name)
@@ -279,8 +312,6 @@ class TensorNameMap:
                         self.mapping[key] = (tensor, tensor_name)
 
     def get_type_and_name(self, key: str, try_suffixes: Sequence[str] = ()) -> tuple[MODEL_TENSOR, str] | None:
-        # if("lf_gate.output_layernorm" in key):
-        #     print("")
         result = self.mapping.get(key)
         if result is not None:
             return result
