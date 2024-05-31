@@ -1231,14 +1231,29 @@ def main(args_in: list[str] | None = None) -> None:
     parser.add_argument("--outtype",     choices=output_choices, help="output format - note: q8_0 may be very slow (default: f16 or f32 based on input)")
     parser.add_argument("--vocab-dir",   type=Path,              help="directory containing tokenizer.model, if separate from model file")
     # parser.add_argument("--outfile",     type=Path, default="D:\\llama-cpp\\llama.cpp-bk\\zh-models/yuan2b-chenxi2-f16-merge.gguf",              help="path to write to; default: based on input")
-    parser.add_argument("--outfile",     type=Path, default="E:\\yuan2b-2-moe-merge.gguf",              help="path to write to; default: based on input")
-    parser.add_argument("--model",         type=Path, default="E:\\ckpts\\yuan2b-moe-2",              help="directory containing model file, or model file itself (*.pth, *.pt, *.bin)")
+    parser.add_argument("--outfile",     type=Path, default="E:\\yuan2b-merge.gguf",              help="path to write to; default: based on input")
+    parser.add_argument("--model",         type=Path, default="E:\ckpts\yuan2b-hf\yuan2-2B-febura",              help="directory containing model file, or model file itself (*.pth, *.pt, *.bin)")
+    parser.add_argument("--model-type",         type=str, default="yuan2.0-2b",              help="yuan2b or yuan2-m32")
     parser.add_argument("--ctx",         type=int,               help="model training context (default: based on input)")
     parser.add_argument("--concurrency", type=int,               help=f"concurrency used for conversion (default: {DEFAULT_CONCURRENCY})", default = DEFAULT_CONCURRENCY)
     parser.add_argument("--bigendian",   action="store_true",    help="model is executed on big endian machine")
     parser.add_argument("--padvocab", action="store_true", default=True,help="add pad tokens when model vocab expects more than tokenizer metadata provides")
 
     args = parser.parse_args(args_in)
+
+    global ARCH
+    global general_name
+    if(args.model_type =="yuan2.0-2b"):
+        ARCH = gguf.MODEL_ARCH.YUAN2
+        general_name = "yuan2"
+    elif(args.model_type =="yuan2.0-m32"):
+        ARCH = gguf.MODEL_ARCH.YUAN2_MOE
+        general_name = "yuan2_moe"
+    else:
+        print("Error: 只支持yuan2b和yuan2-moe这2个模型架构！")
+        exit()
+    print("要转换的模型架构：{0}，模型的描述：{1}".format(str(ARCH),str(general_name)))
+
     if args.dump_single:
         model_plus = lazy_load_file(args.model)
         do_dump_model(model_plus)
