@@ -9,7 +9,7 @@
 
 
 <p align="center">
-📣 <a href="https://github.com/IEIT-Yuan/Yuan2.0-M32" target="_blank">源2.0 M32大模型</a> •📎 <a href="https://github.com/IEIT-Yuan/Yuan-2.0" target="_blank">源2.0 大模型</a> •  💬 <a href="https://github.com/IEIT-Yuan/YuanChat" target="_blank">YuanChat</a>• 📎  <a href="https://arxiv.org/abs/2405.17976" target="_blank">源2.0 M32论文</a>
+📣 <a href="https://github.com/IEIT-Yuan/Yuan2.0-M32" target="_blank">源2.0 M32大模型</a> •📎 <a href="https://github.com/IEIT-Yuan/Yuan-2.0" target="_blank">源2.0 大模型</a> •  💬 <a href="https://github.com/IEIT-Yuan/YuanChat" target="_blank">YuanChat</a> • 📎  <a href="https://arxiv.org/abs/2405.17976" target="_blank">源2.0 M32论文</a>
 </p>
 
 
