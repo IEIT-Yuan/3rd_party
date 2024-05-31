@@ -216,7 +216,7 @@ llama_print_timings:       total time =   22961.55 ms
     ./quantize yuan2b-moe-40b-24-f16-hf.gguf yuan2b-moe-40b-q4_0.gguf q4_0
 
 
-## 3 FAQ
+## 3. FAQ
 
 - 1、是否支持gpu推理？是否支持其他gguf模型？
   - 由于修改了gguf原有的一些算子实现，该项目目前并不能使用gpu进行推理，而且也不能跑llama等其他gguf模型；
