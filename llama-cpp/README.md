@@ -1,6 +1,37 @@
-# 1. Yuan2.0-gguf
 
-## 1.1 概述
+
+
+<div align="center">
+<h1>
+  llama.cpp for Yuan2.0大模型
+</h1>
+</div>
+
+
+<p align="center">
+📣 <a href="https://github.com/IEIT-Yuan/Yuan2.0-M32" target="_blank">源2.0 M32大模型</a> •📎 <a href="https://github.com/IEIT-Yuan/Yuan-2.0" target="_blank">源2.0 大模型</a> •  💬 <a href="https://github.com/IEIT-Yuan/YuanChat" target="_blank">YuanChat</a>• 📎  <a href="https://arxiv.org/abs/2405.17976" target="_blank">源2.0 M32论文</a>
+</p>
+
+
+
+<div align="center">
+
+    
+  <a href="code_license">
+    <img alt="Code License" src="https://img.shields.io/badge/Apache%202.0%20-green?style=flat&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FIEIT-Yuan%2FYuan-2.0-MoE%3Ftab%3DApache-2.0-1-ov-file"/>
+  </a>
+  <a href="model_license">
+    <img alt="Model License" src="https://img.shields.io/badge/Yuan2.0%20License-blue?style=flat&logoColor=blue&label=Model%20License&color=blue&link=https%3A%2F%2Fgithub.com%2FIEIT-Yuan%2FYuan-2.0%2Fblob%2Fmain%2FLICENSE-Yuan" />
+  </a>
+
+</div>
+
+## 0. Introduction
+
+我们为开发者提供了适用于Yuan2.0大模型 的 llama.cpp（llama.cpp for Yuan2.0）项目，基于开源项目[llama.cpp](https://github.com/ggerganov/llama.cpp)，提供模型转换、量化功能的完整代码与详细步骤，支持使用Yuan2.0-M32与Yuan2.0大模型本地、服务服务器端使用CPU运行源大模型。
+## 1. Yuan2.0-gguf
+
+### 1.1 概述
 源2.0 是浪潮信息发布的新一代基础语言大模型。我们开源了全部的3个模型源2.0-102B，源2.0-51B和源2.0-2B。并且我们提供了预训练，微调，推理服务的相关脚本，以供研发人员做进一步的开发。源2.0是在源1.0的基础上，利用更多样的高质量预训练数据和指令微调数据集，令模型在语义、数学、推理、代码、知识等不同方面具备更强的理解能力。
 
 详情请参考Yuan2.0模型
@@ -21,13 +52,13 @@
 
 目前支持fp16精度模型的gguf文件转换，后续会持续进行其他精度的工作。
 
-## 1.2. gguf文件的生成
+### 1.2. gguf文件的生成
 
 ```shell
 python convert.py --model yuan2b-hf\yuan2-2B --outfile zh-models/Yuan2-2B-Februa-hf-GGUF.gguf
 ```
 
-## 1.3. 编译
+### 1.3. 编译
   - Using `make`:
   - On Linux or MacOS:
 
@@ -55,7 +86,7 @@ python convert.py --model yuan2b-hf\yuan2-2B --outfile zh-models/Yuan2-2B-Februa
     cmake --build . --config Release
 
 
-## 1.4. 测试Demo
+### 1.4. 测试Demo
 
 ### <font color=#FFC125 >1.4.1 测试环境 </font>
 
@@ -127,7 +158,7 @@ llama_print_timings:       total time =   22961.55 ms
 
 
 
-# 2. Yuan2.0-M32-gguf
+## 2. Yuan2.0-M32-gguf
 
 20240531更新
 
@@ -135,7 +166,7 @@ llama_print_timings:       total time =   22961.55 ms
 - 修改lfa输入缓存为2个token，内存占用减少，推理速度略微提升；
 - 修改-i交互模式下的若干bug；
 
-## 2.1 概述
+### 2.1 概述
 浪潮信息 **“源2.0 M32”大模型（简称，Yuan2.0-M32）** 采用稀疏混合专家架构（MoE），以Yuan2.0-2B模型作为基底模型，通过创新的门控网络（Attention Router）实现32个专家间（Experts*32）的协同工作与任务调度，在显著降低模型推理算力需求的情况下，带来了更强的模型精度表现与推理性能；源2.0-M32在多个业界主流的评测进行了代码生成、数学问题求解、科学问答与综合知识能力等方面的能力测评。结果显示，源2.0-M32在多项任务评测中，展示出了较为先进的能力表现，MATH（数学求解）、ARC-C（科学问答）测试精度超过LLaMA3-700亿模型。**Yuan2.0-M32大模型** 基本信息如下：
 
 + **模型参数量：** 40B <br>
@@ -150,7 +181,7 @@ llama_print_timings:       total time =   22961.55 ms
 <a href="https://github.com/IEIT-Yuan/Yuan2.0-M32" target="_blank">**github**</a>
 
 
-## 2.1 如何转换gguf
+### 2.2 如何转换gguf
     # 由于hf格式ckpt的transformers版本与转换gguf的transformers不一致，需要使用hf加载，然后再保存一下；
     # 可运行的环境如下：
     python3.9 cpu win10/linux
@@ -166,10 +197,10 @@ llama_print_timings:       total time =   22961.55 ms
 
     convert.py的传入参数model_type，需要根据模型的结构进行修改；
 
-## 2.2 编译
+### 2.3 编译
     跟yuan2-gguf的编译方法一样；
 
-## 2.3 推理脚本：
+### 2.4 推理脚本：
     windows:
     ./main.exe -m yuan2b-moe-40b-q4_0.gguf -t 6 -n 20 -p '北京简介'
 
@@ -177,7 +208,7 @@ llama_print_timings:       total time =   22961.55 ms
     ./main -m /mnt/md0/yuan2b-moe-40b-24-f16-hf.gguf --file /mnt/md0/shenchong/llama.cpp-gitee/prompt_text.txt -c 1024 -b 1024 -t 64 -n 10
 
 
-## 2.4 量化脚本：
+### 2.5 量化脚本：
     windows：
     ./quantize.exe yuan2b-moe-40b-24-f16-hf.gguf yuan2b-moe-40b-q4_0.gguf q4_0
 
@@ -185,7 +216,7 @@ llama_print_timings:       total time =   22961.55 ms
     ./quantize yuan2b-moe-40b-24-f16-hf.gguf yuan2b-moe-40b-q4_0.gguf q4_0
 
 
-# 3 faq
+## 3 FAQ
 
 - 1、是否支持gpu推理？是否支持其他gguf模型？
   - 由于修改了gguf原有的一些算子实现，该项目目前并不能使用gpu进行推理，而且也不能跑llama等其他gguf模型；
